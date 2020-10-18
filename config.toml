@@ -110,10 +110,10 @@ disqusShortname = ""
       url = "blogs/magna"
 
     [[params.tiles.showcase]]
-      title = "Ipsum"
-      subtitle = "Nisl Sed Aliquam"
+      title = "Boris Bikes"
+      subtitle = "Trend of Londoners using Boris Bikes grouped Year"
       image = "pic04.jpg"
-      url = "blogs/ipsum"
+      url = "blogs/blog5"
 
     [[params.tiles.showcase]]
       title = "Consequat"
