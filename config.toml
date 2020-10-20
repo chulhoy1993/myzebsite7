@@ -101,7 +101,7 @@ disqusShortname = ""
       title = "Analysis on Top 25 Countries that consume alcohol"
       subtitle = "Are stereotypes true?"
       image = "drinks.jpg"
-      url = "blogs/homework1_wine"
+      url = "blogs/Drinks"
 
     [[params.tiles.showcase]]
       title = "IBM HR Analysis"
