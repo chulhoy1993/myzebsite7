@@ -102,7 +102,7 @@ disqusShortname = ""
       subtitle = "Stocks return until 2015"
       image = "nyse.jpg"
       url = "blogs/tempus"
-blo
+
     [[params.tiles.showcase]]
       title = "Life Expectancy"
       subtitle = "Life Expectancy by Continent"
@@ -139,11 +139,8 @@ blo
   [params.two]
     enable = true
     title = "Welcome to my site"
-    subtitle = """Nullam et orci eu lorem consequat tincidunt vivamus et sagittis libero. 
-    Mauris aliquet magna magna sed nunc rhoncus pharetra. 
-    Pellentesque condimentum sem. In efficitur ligula tate urna. Maecenas laoreet massa vel lacinia pellentesque lorem ipsum dolor. 
-    Nullam et orci eu lorem consequat tincidunt. Vivamus et sagittis libero.
-    Mauris aliquet magna magna sed nunc rhoncus amet pharetra et feugiat tempus."""
+    subtitle = """Greetings and welcome to my site, a collection of R related materials for 2020. 
+    Here you will find diverse range of analyses regarding wide-ranging topics which include various topics."""
     buttonText = "Get Started"
     url = "blogs"
 
@@ -172,17 +169,17 @@ blo
     # by copying the corresponding map with frontmatter code.
     [[params.contact.email]]
     title = "Email"
-    email = "example@domain.com"
+    email = "syang.mfa2021@london.edu"
 
     [[params.contact.phone]]
     title = "Phone"
-    phone = "(000) 000-0000 x1234"
+    phone = "Contacts via email are preferred"
 
     [[params.contact.address]]
     title = "Address"
-    street = "Street"
-    city = "City, ST 00000"
-    country = "Country"
+    street = "Salisbury Street"
+    city = "London"
+    country = "United Kingdom"
 
   # Footer section
   [params.footer]
