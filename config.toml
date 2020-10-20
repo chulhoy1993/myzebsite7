@@ -101,18 +101,18 @@ disqusShortname = ""
       title = "Analysis on Top 25 Countries that consume alcohol"
       subtitle = "Are stereotypes true?"
       image = "drinks.jpg"
-      url = "blogs/Drinks"
+      url = "blogs/New_drinks"
 
     [[params.tiles.showcase]]
       title = "IBM HR Analysis"
       subtitle = "Pay structure analysis based on roles"
-      image = "pic03.jpg"
-      url = "blogs/ibm"
+      image = "ibm.jpg"
+      url = "blogs/newibm"
 
     [[params.tiles.showcase]]
-      title = "Boris Bikes"
-      subtitle = "Trend of Londoners using Boris Bikes grouped Year"
-      image = "pic04.jpg"
+      title = "Selected equity returns on NYSE"
+      subtitle = "Stock Returns"
+      image = "nyse.jpg"
       url = "blogs/blog5"
 
     [[params.tiles.showcase]]
@@ -123,9 +123,9 @@ disqusShortname = ""
 
     [[params.tiles.showcase]]
       title = "Climate change"
-      subtitle = "Annual temperature"
-      image = "pic06.jpg"
-      url = "blogs/ipsum"
+      subtitle = "Weather Anomolies"
+      image = "weathers.jpg"
+      url = "blogs/weather"
     # You can make more showcases by copy and pasting the code above
 
   [params.blog]

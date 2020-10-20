@@ -1,0 +1,2034 @@
+---
+title: "Selected Equity Retuns on NYSE"
+output: html_document
+---
+
+<script src="/rmarkdown-libs/kePrint/kePrint.js"></script>
+<link href="/rmarkdown-libs/lightable/lightable.css" rel="stylesheet" />
+
+
+<pre class="r"><code>knitr::opts_chunk$set(
+  message = FALSE, 
+  warning = FALSE, 
+  tidy=FALSE,     # display code as typed
+  size=&quot;small&quot;)   # slightly smaller font for code
+options(digits = 3)
+
+# default figure size
+knitr::opts_chunk$set(
+  fig.width=6.75, 
+  fig.height=6.75,
+  fig.align = &quot;center&quot;
+)</code></pre>
+<blockquote>
+<p>Let’s measure the returns of stocks listed on the New York Stock Exchange</p>
+</blockquote>
+<pre class="r"><code>nyse &lt;- read_csv(here::here(&quot;data&quot;,&quot;nyse.csv&quot;))</code></pre>
+<p>Based on this dataset, create a table and a bar plot that shows the number of companies per sector, in descending order</p>
+<pre class="r"><code>comps_by_sector &lt;- nyse %&gt;% 
+  group_by(sector) %&gt;% 
+  count(sort = TRUE) 
+
+table_companies_by_sector &lt;- comps_by_sector %&gt;%
+  kable(caption = &quot;Number of Companies by Sector&quot;) %&gt;%
+  kable_classic(&quot;striped&quot;, full_width = FALSE) %&gt;%
+  column_spec(2, width = &quot;7em&quot;)
+table_companies_by_sector</code></pre>
+<table class=" lightable-classic lightable-striped" style='font-family: "Arial Narrow", "Source Sans Pro", sans-serif; width: auto !important; margin-left: auto; margin-right: auto;'>
+<caption>
+(#tab:companies_per_sector)Number of Companies by Sector
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+sector
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Finance
+</td>
+<td style="text-align:right;width: 7em; ">
+97
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Consumer Services
+</td>
+<td style="text-align:right;width: 7em; ">
+79
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Public Utilities
+</td>
+<td style="text-align:right;width: 7em; ">
+60
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Capital Goods
+</td>
+<td style="text-align:right;width: 7em; ">
+45
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Health Care
+</td>
+<td style="text-align:right;width: 7em; ">
+45
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Energy
+</td>
+<td style="text-align:right;width: 7em; ">
+42
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Technology
+</td>
+<td style="text-align:right;width: 7em; ">
+40
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Basic Industries
+</td>
+<td style="text-align:right;width: 7em; ">
+39
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Consumer Non-Durables
+</td>
+<td style="text-align:right;width: 7em; ">
+31
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Miscellaneous
+</td>
+<td style="text-align:right;width: 7em; ">
+12
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Transportation
+</td>
+<td style="text-align:right;width: 7em; ">
+10
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Consumer Durables
+</td>
+<td style="text-align:right;width: 7em; ">
+8
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>ggplot(comps_by_sector, aes(x = reorder(sector, -n), y = n))+
+  geom_col()+
+  theme(axis.text.x=element_text(angle=90))+
+  labs(title = &quot;Number of Companies by Sector&quot;,
+       x = &quot;Sector&quot;, 
+       y = &quot;Number of companies&quot;)</code></pre>
+<p><img src="/blogs/stock_files/figure-html/companies_per_sector-1.png" width="648" style="display: block; margin: auto;" />
+Next, let’s choose some stocks and their ticker symbols and download some data. You <strong>MUST</strong> choose 6 different stocks from the ones listed below; You should, however, add <code>SPY</code> which is the SP500 ETF (Exchange Traded Fund).</p>
+<pre class="r"><code>myStocks &lt;- c(&quot;MMM&quot;,&quot;ABB&quot;,&quot;ABT&quot;,&quot;ABBV&quot;,&quot;ACN&quot;,&quot;AAP&quot;,&quot;SPY&quot; ) %&gt;%
+  tq_get(get  = &quot;stock.prices&quot;,
+         from = &quot;2011-01-01&quot;,
+         to   = &quot;2020-08-31&quot;) %&gt;%
+  group_by(symbol) 
+
+glimpse(myStocks) </code></pre>
+<pre><code>## Rows: 16,515
+## Columns: 8
+## Groups: symbol [7]
+## $ symbol   &lt;chr&gt; &quot;MMM&quot;, &quot;MMM&quot;, &quot;MMM&quot;, &quot;MMM&quot;, &quot;MMM&quot;, &quot;MMM&quot;, &quot;MMM&quot;, &quot;MMM&quot;, &quot;M...
+## $ date     &lt;date&gt; 2011-01-03, 2011-01-04, 2011-01-05, 2011-01-06, 2011-01-0...
+## $ open     &lt;dbl&gt; 86.8, 87.0, 86.3, 86.9, 86.6, 85.7, 87.3, 88.0, 88.5, 87.7...
+## $ high     &lt;dbl&gt; 87.3, 87.3, 87.9, 87.2, 87.3, 87.3, 88.3, 88.8, 88.9, 88.1...
+## $ low      &lt;dbl&gt; 86.7, 86.3, 86.1, 85.6, 85.9, 85.7, 87.3, 87.9, 87.8, 87.4...
+## $ close    &lt;dbl&gt; 86.8, 86.7, 86.7, 86.1, 86.2, 87.2, 87.7, 88.7, 88.0, 88.1...
+## $ volume   &lt;dbl&gt; 2632800, 2644100, 4081300, 3452600, 3355500, 3475200, 3024...
+## $ adjusted &lt;dbl&gt; 66.8, 66.7, 66.7, 66.3, 66.4, 67.1, 67.6, 68.3, 67.8, 67.8...</code></pre>
+<p>Financial performance analysis depend on returns; If I buy a stock today for 100 and I sell it tomorrow for 101.75, my one-day return, assuming no transaction costs, is 1.75%. So given the adjusted closing prices, our first step is to calculate daily and monthly returns.</p>
+<pre class="r"><code>#calculate daily returns
+myStocks_returns_daily &lt;- myStocks %&gt;%
+  tq_transmute(select     = adjusted, 
+               mutate_fun = periodReturn, 
+               period     = &quot;daily&quot;, 
+               type       = &quot;log&quot;,
+               col_rename = &quot;daily_returns&quot;,
+               cols = c(nested.col))  
+
+#calculate monthly  returns
+myStocks_returns_monthly &lt;- myStocks %&gt;%
+  tq_transmute(select     = adjusted, 
+               mutate_fun = periodReturn, 
+               period     = &quot;monthly&quot;, 
+               type       = &quot;arithmetic&quot;,
+               col_rename = &quot;monthly_returns&quot;,
+               cols = c(nested.col)) 
+
+#calculate yearly returns
+myStocks_returns_annual &lt;- myStocks %&gt;%
+  group_by(symbol) %&gt;%
+  tq_transmute(select     = adjusted, 
+               mutate_fun = periodReturn, 
+               period     = &quot;yearly&quot;, 
+               type       = &quot;arithmetic&quot;,
+               col_rename = &quot;yearly_returns&quot;,
+               cols = c(nested.col))</code></pre>
+<p>Create a table where you summarise monthly returns for each of the stocks and <code>SPY</code>; min, max, median, mean, SD.</p>
+<pre class="r"><code>summary_monthly_returns &lt;- myStocks_returns_monthly %&gt;% 
+  
+  group_by(symbol) %&gt;% 
+  
+  summarise(min=min(monthly_returns)*100, max=max(monthly_returns)*100,median=median(monthly_returns)*100,mean=mean(monthly_returns)*100,SD=sd(monthly_returns)*100) %&gt;% 
+  
+  arrange(desc(mean))
+
+kbl(summary_monthly_returns,col.names=c(&quot;Ticker&quot;,&quot;Min. Monthly Returns (%)&quot;,&quot;Max. Monthly Returns (%)&quot;,&quot;Median Monthly Returns (%)&quot;,&quot;Mean Monthly Returns (%)&quot;,&quot;Standard Deviation Monthly Returns (%)&quot;)) %&gt;%
+kable_styling()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Ticker
+</th>
+<th style="text-align:right;">
+Min. Monthly Returns (%)
+</th>
+<th style="text-align:right;">
+Max. Monthly Returns (%)
+</th>
+<th style="text-align:right;">
+Median Monthly Returns (%)
+</th>
+<th style="text-align:right;">
+Mean Monthly Returns (%)
+</th>
+<th style="text-align:right;">
+Standard Deviation Monthly Returns (%)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+ACN
+</td>
+<td style="text-align:right;">
+-14.3
+</td>
+<td style="text-align:right;">
+15.8
+</td>
+<td style="text-align:right;">
+2.160
+</td>
+<td style="text-align:right;">
+1.731
+</td>
+<td style="text-align:right;">
+5.57
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ABBV
+</td>
+<td style="text-align:right;">
+-18.3
+</td>
+<td style="text-align:right;">
+21.1
+</td>
+<td style="text-align:right;">
+1.789
+</td>
+<td style="text-align:right;">
+1.711
+</td>
+<td style="text-align:right;">
+7.48
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ABT
+</td>
+<td style="text-align:right;">
+-15.2
+</td>
+<td style="text-align:right;">
+17.2
+</td>
+<td style="text-align:right;">
+1.508
+</td>
+<td style="text-align:right;">
+1.700
+</td>
+<td style="text-align:right;">
+5.30
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+AAP
+</td>
+<td style="text-align:right;">
+-29.6
+</td>
+<td style="text-align:right;">
+29.6
+</td>
+<td style="text-align:right;">
+0.978
+</td>
+<td style="text-align:right;">
+1.160
+</td>
+<td style="text-align:right;">
+8.89
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+SPY
+</td>
+<td style="text-align:right;">
+-12.5
+</td>
+<td style="text-align:right;">
+12.7
+</td>
+<td style="text-align:right;">
+1.462
+</td>
+<td style="text-align:right;">
+1.117
+</td>
+<td style="text-align:right;">
+3.81
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+MMM
+</td>
+<td style="text-align:right;">
+-15.0
+</td>
+<td style="text-align:right;">
+11.3
+</td>
+<td style="text-align:right;">
+1.683
+</td>
+<td style="text-align:right;">
+0.928
+</td>
+<td style="text-align:right;">
+5.33
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ABB
+</td>
+<td style="text-align:right;">
+-19.7
+</td>
+<td style="text-align:right;">
+14.8
+</td>
+<td style="text-align:right;">
+0.794
+</td>
+<td style="text-align:right;">
+0.636
+</td>
+<td style="text-align:right;">
+6.57
+</td>
+</tr>
+</tbody>
+</table>
+<p>Plot a density plot, using <code>geom_density()</code>, for each of the stocks</p>
+<pre class="r"><code>ggplot(myStocks_returns_monthly, aes(x=monthly_returns)) + 
+  geom_density() + 
+  facet_wrap(~symbol) + 
+  labs(x=&quot;Returns (monthly)&quot;, y=&quot;Density&quot;, title=&quot;Density Plot of Returns (monthly)&quot;)</code></pre>
+<p><img src="/blogs/stock_files/figure-html/density_monthly_returns-1.png" width="648" style="display: block; margin: auto;" /></p>
+<p>What can you infer from this plot? Which stock is the riskiest? The least risky?</p>
+<p>From our point of view, the stock “ABT” seems to have the least variance, ie least riskiest, while ABBV has the most. However, not a stock but obviously SPY seems to be least riskiest.</p>
+<p>Finally, make a plot that shows the expected monthly return (mean) of a stock on the Y axis and the risk (standard deviation) in the X-axis. Please use <code>ggrepel::geom_text_repel()</code> to label each stock</p>
+<pre class="r"><code>ggplot(summary_monthly_returns, aes(x=SD, y=mean, label=symbol)) + 
+  geom_point(alpha=5) + 
+  geom_text_repel() + 
+  labs(x=&quot;SD&quot;, y=&quot;Mean&quot;, title=&quot;Correlation Between Mean and Standard Deviation of  Returns (monthly)&quot;) </code></pre>
+<p><img src="/blogs/stock_files/figure-html/risk_return_plot-1.png" width="648" style="display: block; margin: auto;" /></p>
+<p>What can you infer from this plot? Are there any stocks which, while being riskier, do not have a higher expected return?</p>
+<blockquote>
+<p>In general, this graph seems to representate the efficient frontier illustration. Assuming similar risk level (SD), any stock is more efficient with higher return. Alternatively, assuming similar return level, any stock with lower risk (SD) is more efficient. E.g. ABB is efficient over MMM.</p>
+</blockquote>
+<p>#IBM HR
+## On your own: IBM HR Analytics</p>
+<p>For this task, you will analyse a data set on Human Resoruce Analytics. The <a href="https://www.kaggle.com/pavansubhasht/ibm-hr-analytics-attrition-dataset">IBM HR Analytics Employee Attrition &amp; Performance data set</a> is a fictional data set created by IBM data scientists. Among other things, the data set includes employees’ income, their distance from work, their position in the company, their level of education, etc. A full description can be found on the website.</p>
+<p>First let us load the data</p>
+<pre class="r"><code>hr_dataset &lt;- read_csv(here::here(&quot;data&quot;, &quot;datasets_1067_1925_WA_Fn-UseC_-HR-Employee-Attrition.csv&quot;))
+glimpse(hr_dataset)</code></pre>
+<pre><code>## Rows: 1,470
+## Columns: 35
+## $ Age                      &lt;dbl&gt; 41, 49, 37, 33, 27, 32, 59, 30, 38, 36, 35...
+## $ Attrition                &lt;chr&gt; &quot;Yes&quot;, &quot;No&quot;, &quot;Yes&quot;, &quot;No&quot;, &quot;No&quot;, &quot;No&quot;, &quot;No&quot;...
+## $ BusinessTravel           &lt;chr&gt; &quot;Travel_Rarely&quot;, &quot;Travel_Frequently&quot;, &quot;Tra...
+## $ DailyRate                &lt;dbl&gt; 1102, 279, 1373, 1392, 591, 1005, 1324, 13...
+## $ Department               &lt;chr&gt; &quot;Sales&quot;, &quot;Research &amp; Development&quot;, &quot;Resear...
+## $ DistanceFromHome         &lt;dbl&gt; 1, 8, 2, 3, 2, 2, 3, 24, 23, 27, 16, 15, 2...
+## $ Education                &lt;dbl&gt; 2, 1, 2, 4, 1, 2, 3, 1, 3, 3, 3, 2, 1, 2, ...
+## $ EducationField           &lt;chr&gt; &quot;Life Sciences&quot;, &quot;Life Sciences&quot;, &quot;Other&quot;,...
+## $ EmployeeCount            &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ...
+## $ EmployeeNumber           &lt;dbl&gt; 1, 2, 4, 5, 7, 8, 10, 11, 12, 13, 14, 15, ...
+## $ EnvironmentSatisfaction  &lt;dbl&gt; 2, 3, 4, 4, 1, 4, 3, 4, 4, 3, 1, 4, 1, 2, ...
+## $ Gender                   &lt;chr&gt; &quot;Female&quot;, &quot;Male&quot;, &quot;Male&quot;, &quot;Female&quot;, &quot;Male&quot;...
+## $ HourlyRate               &lt;dbl&gt; 94, 61, 92, 56, 40, 79, 81, 67, 44, 94, 84...
+## $ JobInvolvement           &lt;dbl&gt; 3, 2, 2, 3, 3, 3, 4, 3, 2, 3, 4, 2, 3, 3, ...
+## $ JobLevel                 &lt;dbl&gt; 2, 2, 1, 1, 1, 1, 1, 1, 3, 2, 1, 2, 1, 1, ...
+## $ JobRole                  &lt;chr&gt; &quot;Sales Executive&quot;, &quot;Research Scientist&quot;, &quot;...
+## $ JobSatisfaction          &lt;dbl&gt; 4, 2, 3, 3, 2, 4, 1, 3, 3, 3, 2, 3, 3, 4, ...
+## $ MaritalStatus            &lt;chr&gt; &quot;Single&quot;, &quot;Married&quot;, &quot;Single&quot;, &quot;Married&quot;, ...
+## $ MonthlyIncome            &lt;dbl&gt; 5993, 5130, 2090, 2909, 3468, 3068, 2670, ...
+## $ MonthlyRate              &lt;dbl&gt; 19479, 24907, 2396, 23159, 16632, 11864, 9...
+## $ NumCompaniesWorked       &lt;dbl&gt; 8, 1, 6, 1, 9, 0, 4, 1, 0, 6, 0, 0, 1, 0, ...
+## $ Over18                   &lt;chr&gt; &quot;Y&quot;, &quot;Y&quot;, &quot;Y&quot;, &quot;Y&quot;, &quot;Y&quot;, &quot;Y&quot;, &quot;Y&quot;, &quot;Y&quot;, &quot;Y...
+## $ OverTime                 &lt;chr&gt; &quot;Yes&quot;, &quot;No&quot;, &quot;Yes&quot;, &quot;Yes&quot;, &quot;No&quot;, &quot;No&quot;, &quot;Ye...
+## $ PercentSalaryHike        &lt;dbl&gt; 11, 23, 15, 11, 12, 13, 20, 22, 21, 13, 13...
+## $ PerformanceRating        &lt;dbl&gt; 3, 4, 3, 3, 3, 3, 4, 4, 4, 3, 3, 3, 3, 3, ...
+## $ RelationshipSatisfaction &lt;dbl&gt; 1, 4, 2, 3, 4, 3, 1, 2, 2, 2, 3, 4, 4, 3, ...
+## $ StandardHours            &lt;dbl&gt; 80, 80, 80, 80, 80, 80, 80, 80, 80, 80, 80...
+## $ StockOptionLevel         &lt;dbl&gt; 0, 1, 0, 0, 1, 0, 3, 1, 0, 2, 1, 0, 1, 1, ...
+## $ TotalWorkingYears        &lt;dbl&gt; 8, 10, 7, 8, 6, 8, 12, 1, 10, 17, 6, 10, 5...
+## $ TrainingTimesLastYear    &lt;dbl&gt; 0, 3, 3, 3, 3, 2, 3, 2, 2, 3, 5, 3, 1, 2, ...
+## $ WorkLifeBalance          &lt;dbl&gt; 1, 3, 3, 3, 3, 2, 2, 3, 3, 2, 3, 3, 2, 3, ...
+## $ YearsAtCompany           &lt;dbl&gt; 6, 10, 0, 8, 2, 7, 1, 1, 9, 7, 5, 9, 5, 2,...
+## $ YearsInCurrentRole       &lt;dbl&gt; 4, 7, 0, 7, 2, 7, 0, 0, 7, 7, 4, 5, 2, 2, ...
+## $ YearsSinceLastPromotion  &lt;dbl&gt; 0, 1, 0, 3, 2, 3, 0, 0, 1, 7, 0, 0, 4, 1, ...
+## $ YearsWithCurrManager     &lt;dbl&gt; 5, 7, 0, 0, 2, 6, 0, 0, 8, 7, 3, 8, 3, 2, ...</code></pre>
+<p>I am going to clean the data set, as variable names are in capital letters, some variables are not really necessary, and some variables, e.g., <code>education</code> are given as a number rather than a more useful description</p>
+<pre class="r"><code>hr_cleaned &lt;- hr_dataset %&gt;% 
+  clean_names() %&gt;% 
+  mutate(
+    education = case_when(
+      education == 1 ~ &quot;Below College&quot;,
+      education == 2 ~ &quot;College&quot;,
+      education == 3 ~ &quot;Bachelor&quot;,
+      education == 4 ~ &quot;Master&quot;,
+      education == 5 ~ &quot;Doctor&quot;
+    ),
+    environment_satisfaction = case_when(
+      environment_satisfaction == 1 ~ &quot;Low&quot;,
+      environment_satisfaction == 2 ~ &quot;Medium&quot;,
+      environment_satisfaction == 3 ~ &quot;High&quot;,
+      environment_satisfaction == 4 ~ &quot;Very High&quot;
+    ),
+    job_satisfaction = case_when(
+      job_satisfaction == 1 ~ &quot;Low&quot;,
+      job_satisfaction == 2 ~ &quot;Medium&quot;,
+      job_satisfaction == 3 ~ &quot;High&quot;,
+      job_satisfaction == 4 ~ &quot;Very High&quot;
+    ),
+    performance_rating = case_when(
+      performance_rating == 1 ~ &quot;Low&quot;,
+      performance_rating == 2 ~ &quot;Good&quot;,
+      performance_rating == 3 ~ &quot;Excellent&quot;,
+      performance_rating == 4 ~ &quot;Outstanding&quot;
+    ),
+    work_life_balance = case_when(
+      work_life_balance == 1 ~ &quot;Bad&quot;,
+      work_life_balance == 2 ~ &quot;Good&quot;,
+      work_life_balance == 3 ~ &quot;Better&quot;,
+      work_life_balance == 4 ~ &quot;Best&quot;
+    )
+  ) %&gt;% 
+  select(age, attrition, daily_rate, department,
+         distance_from_home, education,
+         gender, job_role,environment_satisfaction,
+         job_satisfaction, marital_status,
+         monthly_income, num_companies_worked, percent_salary_hike,
+         performance_rating, total_working_years,
+         work_life_balance, years_at_company,
+         years_since_last_promotion)</code></pre>
+<p>Produce a one-page summary describing this dataset. Here is a non-exhaustive list of questions:</p>
+<p>skim(hr_cleaned)</p>
+<ol style="list-style-type: decimal">
+<li>How often do people leave the company (<code>attrition</code>)</li>
+</ol>
+<pre class="r"><code>mean(hr_cleaned$attrition == &quot;Yes&quot;)*100</code></pre>
+<pre><code>## [1] 16.1</code></pre>
+<p>We observe that people leave the company 16.1% of the time.</p>
+<ol start="2" style="list-style-type: decimal">
+<li>How are <code>age</code>, <code>years_at_company</code>, <code>monthly_income</code> and <code>years_since_last_promotion</code> distributed? can you roughly guess which of these variables is closer to Normal just by looking at summary statistics?</li>
+</ol>
+<pre class="r"><code>hr_cleaned %&gt;% 
+  select(c(1,18,12,19)) %&gt;% 
+  summary()</code></pre>
+<pre><code>##       age       years_at_company monthly_income  years_since_last_promotion
+##  Min.   :18.0   Min.   : 0       Min.   : 1009   Min.   : 0.00             
+##  1st Qu.:30.0   1st Qu.: 3       1st Qu.: 2911   1st Qu.: 0.00             
+##  Median :36.0   Median : 5       Median : 4919   Median : 1.00             
+##  Mean   :36.9   Mean   : 7       Mean   : 6503   Mean   : 2.19             
+##  3rd Qu.:43.0   3rd Qu.: 9       3rd Qu.: 8379   3rd Qu.: 3.00             
+##  Max.   :60.0   Max.   :40       Max.   :19999   Max.   :15.00</code></pre>
+<p>Age, as usually in a normal distribution, the mean and median are identical.</p>
+<ol start="3" style="list-style-type: decimal">
+<li>How are <code>job_satisfaction</code> and <code>work_life_balance</code> distributed? Don’t just report counts, but express categories as % of total</li>
+</ol>
+<pre class="r"><code>satisfaction_distr &lt;- hr_cleaned %&gt;%
+  group_by(job_satisfaction) %&gt;%
+  summarise(count = n(), percentage = (n()/dim(hr_cleaned)[1])*100) %&gt;% 
+  arrange(desc(count))
+
+kbl(satisfaction_distr,col.names=c(&quot;Job Satisfaction Rank&quot;, &quot;Amount&quot;, &quot;Percentage&quot;)) %&gt;%
+kable_styling()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Job Satisfaction Rank
+</th>
+<th style="text-align:right;">
+Amount
+</th>
+<th style="text-align:right;">
+Percentage
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Very High
+</td>
+<td style="text-align:right;">
+459
+</td>
+<td style="text-align:right;">
+31.2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+High
+</td>
+<td style="text-align:right;">
+442
+</td>
+<td style="text-align:right;">
+30.1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Low
+</td>
+<td style="text-align:right;">
+289
+</td>
+<td style="text-align:right;">
+19.7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Medium
+</td>
+<td style="text-align:right;">
+280
+</td>
+<td style="text-align:right;">
+19.0
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>worklife_balance_distr &lt;- hr_cleaned %&gt;%
+  group_by(work_life_balance) %&gt;%
+  summarise(count = n(), percentage = (n()/dim(hr_cleaned)[1])*100) %&gt;% 
+  arrange(desc(count))
+
+kbl(worklife_balance_distr,col.names=c(&quot;Work Life Balance Rank&quot;, &quot;Amount&quot;, &quot;Percentage&quot;)) %&gt;%
+kable_styling()</code></pre>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Work Life Balance Rank
+</th>
+<th style="text-align:right;">
+Amount
+</th>
+<th style="text-align:right;">
+Percentage
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Better
+</td>
+<td style="text-align:right;">
+893
+</td>
+<td style="text-align:right;">
+60.75
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Good
+</td>
+<td style="text-align:right;">
+344
+</td>
+<td style="text-align:right;">
+23.40
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Best
+</td>
+<td style="text-align:right;">
+153
+</td>
+<td style="text-align:right;">
+10.41
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Bad
+</td>
+<td style="text-align:right;">
+80
+</td>
+<td style="text-align:right;">
+5.44
+</td>
+</tr>
+</tbody>
+</table>
+<p>The tables demonstrate that of the majority of workers (31%) have “Very High” job satisfaction rank, and “Better” (61%) work-life balance.</p>
+<ol start="4" style="list-style-type: decimal">
+<li>Is there any relationship between monthly income and education? Monthly income and gender?</li>
+</ol>
+<pre class="r"><code>ggplot(hr_cleaned, 
+       aes(x = ordered(factor(education), 
+                                   levels = c(&#39;Below College&#39;,
+                                              &#39;College&#39;,
+                                              &#39;Bachelor&#39;,
+                                              &#39;Master&#39;,
+                                              &#39;Doctor&#39;)), 
+           y = monthly_income)) + 
+  geom_boxplot(alpha=0.2) + 
+  labs(x = &quot;Education Levels&quot;, 
+       y = &quot;Monthly Income (in USD$)&quot;, 
+       title = &quot;Income (monthly) by Education Level&quot;)</code></pre>
+<p><img src="/blogs/stock_files/figure-html/ggpot_hr-1.png" width="648" style="display: block; margin: auto;" />
+There seems to be a general tendency that people on average with a higher level of education earn a higher monthly income.</p>
+<ol start="5" style="list-style-type: decimal">
+<li>Plot a boxplot of income vs job role. Make sure the highest-paid job roles appear first</li>
+</ol>
+<pre class="r"><code>ggplot(hr_cleaned, 
+       aes(x = reorder(job_role, desc(monthly_income), median), 
+           y = monthly_income)) + geom_boxplot(alpha=0.2) + 
+  theme(axis.text.x = element_text(angle = 45, size = 8)) +
+labs(x = &quot;Job Role&quot;, 
+     y = &quot;Monthly Income (in USD$)&quot;, 
+     title = &quot;Income (monthly) grouped by Job Role&quot;)</code></pre>
+<p><img src="/blogs/stock_files/figure-html/ggpot_hrcleaned-1.png" width="648" style="display: block; margin: auto;" /></p>
+<ol start="6" style="list-style-type: decimal">
+<li>Calculate and plot a bar chart of the mean (or median?) income by education level.</li>
+</ol>
+<pre class="r"><code>mean_income_by_ed &lt;- hr_cleaned %&gt;% 
+  group_by(education) %&gt;% 
+  summarise(mean_income=mean(monthly_income))
+
+ggplot(mean_income_by_ed, 
+       aes(x = ordered(factor(education), 
+                       levels = c(&#39;Below College&#39;,
+                                  &#39;College&#39;,
+                                  &#39;Bachelor&#39;,
+                                  &#39;Master&#39;,
+                                  &#39;Doctor&#39;)), 
+           y = mean_income)) + 
+  geom_col() + 
+  labs(x=&quot;Education Level&quot;, 
+       y=&quot;Mean Income (monthly) (in USD$)&quot;, 
+       title=&quot;Mean Monthly Income grouped by Education Level&quot;)</code></pre>
+<p><img src="/blogs/stock_files/figure-html/mean_income-1.png" width="648" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>median_income_by_ed &lt;- hr_cleaned %&gt;% 
+  group_by(education) %&gt;% 
+  summarise(median_income=median(monthly_income))
+
+
+ggplot(median_income_by_ed, 
+       aes(x = ordered(factor(education), 
+                       levels = c(&#39;Below College&#39;,
+                                  &#39;College&#39;,
+                                  &#39;Bachelor&#39;,
+                                  &#39;Master&#39;,
+                                  &#39;Doctor&#39;)), 
+           y = median_income)) + 
+  geom_col() + 
+  labs(x=&quot;Education Level&quot;, 
+       y=&quot;Median Income (monthly) (in USD$)&quot;, 
+       title=&quot;Median Monthly Income grouped by Education Level&quot;)</code></pre>
+<p><img src="/blogs/stock_files/figure-html/mean_income-2.png" width="648" style="display: block; margin: auto;" /></p>
+<ol start="7" style="list-style-type: decimal">
+<li>Plot the distribution of income by education level. Use a facet_wrap and a theme from <code>ggthemes</code></li>
+</ol>
+<pre class="r"><code>ggplot(hr_cleaned, aes(x = monthly_income)) + 
+  geom_density() + 
+  facet_wrap(~education) +
+  labs(x = &quot;Monthly Income (in USD$)&quot;, 
+       y = &quot;Density&quot;, 
+       title=&quot;Distribution of Income (monthly) by Education Level&quot;)</code></pre>
+<p><img src="/blogs/stock_files/figure-html/monthly_income-1.png" width="648" style="display: block; margin: auto;" /></p>
+<ol start="8" style="list-style-type: decimal">
+<li>Plot income vs age, faceted by <code>job_role</code></li>
+</ol>
+<pre class="r"><code>ggplot(hr_cleaned, 
+       aes(x=age, y=monthly_income)) + 
+  geom_point(alpha=0.2) + 
+  geom_smooth(lwd=0.3)+
+  labs(x=&quot;Age&quot;,y=&quot;Monthly Income (in USD$)&quot;, 
+       title=&quot;In which role does age matter the most for monthly income?&quot;,
+       subtitle=&quot;Correlation Betwen Age and Income (monthly) by Job Role&quot;) + 
+  facet_wrap(~job_role)</code></pre>
+<p><img src="/blogs/stock_files/figure-html/income_vs_age-1.png" width="648" style="display: block; margin: auto;" /></p>
+<div id="challenge-1" class="section level1">
+<h1>Challenge 1</h1>
+<div id="challenge-1-replicating-a-chart" class="section level2">
+<h2>Challenge 1: Replicating a chart</h2>
+<p>The purpose of this exercise is to make a publication-ready plot using your <code>dplyr</code> and <code>ggplot2</code> skills. Open the journal article “Riddell_Annals_Hom-Sui-Disparities.pdf”. Read the abstract and have a look at Figure 3. The data you need is “CDC_Males.csv”.</p>
+<p><img src="C:/Users/chulh/OneDrive/Documents/myzebsite7/images/figure3.jpeg" width="90%" style="display: block; margin: auto;" /></p>
+<p>Don’t worry about replicating it exactly, try and see how far you can get. You’re encouraged to work together if you want to and exchange tips/tricks you figured out.</p>
+<p>You may find these helpful:</p>
+<ul>
+<li><a href="https://cran.r-project.org/web/packages/ggrepel/vignettes/ggrepel.html" class="uri">https://cran.r-project.org/web/packages/ggrepel/vignettes/ggrepel.html</a></li>
+<li><a href="http://colorbrewer2.org" class="uri">http://colorbrewer2.org</a></li>
+</ul>
+<table style='width: auto;'
+        class='table table-condensed'>
+<caption>
+<span id="tab:unnamed-chunk-1">Table 1: </span>Data summary
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:left;">
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Name
+</td>
+<td style="text-align:left;">
+CDC_Males
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Number of rows
+</td>
+<td style="text-align:left;">
+104
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Number of columns
+</td>
+<td style="text-align:left;">
+28
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+_______________________
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Column type frequency:
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+character
+</td>
+<td style="text-align:left;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+numeric
+</td>
+<td style="text-align:left;">
+21
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+________________________
+</td>
+<td style="text-align:left;">
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Group variables
+</td>
+<td style="text-align:left;">
+None
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: character</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+skim_variable
+</th>
+<th style="text-align:right;">
+n_missing
+</th>
+<th style="text-align:right;">
+complete_rate
+</th>
+<th style="text-align:right;">
+min
+</th>
+<th style="text-align:right;">
+max
+</th>
+<th style="text-align:right;">
+empty
+</th>
+<th style="text-align:right;">
+n_unique
+</th>
+<th style="text-align:right;">
+whitespace
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+ST
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+52
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+State
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+20
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+52
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+type
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+7
+</td>
+<td style="text-align:right;">
+11
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ST.order.RD.homicide
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+52
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ST.order.RD.suicide
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+52
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gun.house.prev.category
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+0.96
+</td>
+<td style="text-align:right;">
+11
+</td>
+<td style="text-align:right;">
+11
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+type.fac
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+15
+</td>
+<td style="text-align:right;">
+17
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Variable type: numeric</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left;">
+skim_variable
+</th>
+<th style="text-align:right;">
+n_missing
+</th>
+<th style="text-align:right;">
+complete_rate
+</th>
+<th style="text-align:right;">
+mean
+</th>
+<th style="text-align:right;">
+sd
+</th>
+<th style="text-align:right;">
+p0
+</th>
+<th style="text-align:right;">
+p25
+</th>
+<th style="text-align:right;">
+p50
+</th>
+<th style="text-align:right;">
+p75
+</th>
+<th style="text-align:right;">
+p100
+</th>
+<th style="text-align:left;">
+hist
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Population.Black
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0.98
+</td>
+<td style="text-align:right;">
+3.41e+06
+</td>
+<td style="text-align:right;">
+3.95e+06
+</td>
+<td style="text-align:right;">
+4.05e+04
+</td>
+<td style="text-align:right;">
+3.07e+05
+</td>
+<td style="text-align:right;">
+1.47e+06
+</td>
+<td style="text-align:right;">
+5.98e+06
+</td>
+<td style="text-align:right;">
+1.35e+07
+</td>
+<td style="text-align:left;">
+&lt;U+2587&gt;&lt;U+2582&gt;&lt;U+2582&gt;&lt;U+2581&gt;&lt;U+2581&gt;
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Population.White
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0.98
+</td>
+<td style="text-align:right;">
+1.74e+07
+</td>
+<td style="text-align:right;">
+1.53e+07
+</td>
+<td style="text-align:right;">
+1.01e+06
+</td>
+<td style="text-align:right;">
+5.69e+06
+</td>
+<td style="text-align:right;">
+1.35e+07
+</td>
+<td style="text-align:right;">
+2.28e+07
+</td>
+<td style="text-align:right;">
+6.93e+07
+</td>
+<td style="text-align:left;">
+&lt;U+2587&gt;&lt;U+2583&gt;&lt;U+2581&gt;&lt;U+2581&gt;&lt;U+2581&gt;
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Deaths.homicide.Black
+</td>
+<td style="text-align:right;">
+21
+</td>
+<td style="text-align:right;">
+0.80
+</td>
+<td style="text-align:right;">
+1.43e+03
+</td>
+<td style="text-align:right;">
+5.94e+03
+</td>
+<td style="text-align:right;">
+1.10e+01
+</td>
+<td style="text-align:right;">
+7.75e+01
+</td>
+<td style="text-align:right;">
+2.47e+02
+</td>
+<td style="text-align:right;">
+1.34e+03
+</td>
+<td style="text-align:right;">
+5.38e+04
+</td>
+<td style="text-align:left;">
+&lt;U+2587&gt;&lt;U+2581&gt;&lt;U+2581&gt;&lt;U+2581&gt;&lt;U+2581&gt;
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Deaths.homicide.White
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0.98
+</td>
+<td style="text-align:right;">
+4.83e+02
+</td>
+<td style="text-align:right;">
+1.91e+03
+</td>
+<td style="text-align:right;">
+1.00e+01
+</td>
+<td style="text-align:right;">
+5.42e+01
+</td>
+<td style="text-align:right;">
+1.40e+02
+</td>
+<td style="text-align:right;">
+3.83e+02
+</td>
+<td style="text-align:right;">
+1.84e+04
+</td>
+<td style="text-align:left;">
+&lt;U+2587&gt;&lt;U+2581&gt;&lt;U+2581&gt;&lt;U+2581&gt;&lt;U+2581&gt;
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+crude.homicide.Black
+</td>
+<td style="text-align:right;">
+26
+</td>
+<td style="text-align:right;">
+0.75
+</td>
+<td style="text-align:right;">
+1.78e+01
+</td>
+<td style="text-align:right;">
+1.61e+01
+</td>
+<td style="text-align:right;">
+1.70e+00
+</td>
+<td style="text-align:right;">
+3.47e+00
+</td>
+<td style="text-align:right;">
+1.48e+01
+</td>
+<td style="text-align:right;">
+2.93e+01
+</td>
+<td style="text-align:right;">
+6.27e+01
+</td>
+<td style="text-align:left;">
+&lt;U+2587&gt;&lt;U+2583&gt;&lt;U+2583&gt;&lt;U+2581&gt;&lt;U+2581&gt;
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+crude.homicide.White
+</td>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:right;">
+0.90
+</td>
+<td style="text-align:right;">
+1.47e+00
+</td>
+<td style="text-align:right;">
+1.13e+00
+</td>
+<td style="text-align:right;">
+2.70e-01
+</td>
+<td style="text-align:right;">
+7.00e-01
+</td>
+<td style="text-align:right;">
+1.01e+00
+</td>
+<td style="text-align:right;">
+1.90e+00
+</td>
+<td style="text-align:right;">
+4.74e+00
+</td>
+<td style="text-align:left;">
+&lt;U+2587&gt;&lt;U+2582&gt;&lt;U+2581&gt;&lt;U+2581&gt;&lt;U+2581&gt;
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+adjusted.homicide.Black
+</td>
+<td style="text-align:right;">
+26
+</td>
+<td style="text-align:right;">
+0.75
+</td>
+<td style="text-align:right;">
+1.68e+01
+</td>
+<td style="text-align:right;">
+1.52e+01
+</td>
+<td style="text-align:right;">
+1.68e+00
+</td>
+<td style="text-align:right;">
+3.48e+00
+</td>
+<td style="text-align:right;">
+1.29e+01
+</td>
+<td style="text-align:right;">
+2.78e+01
+</td>
+<td style="text-align:right;">
+5.94e+01
+</td>
+<td style="text-align:left;">
+&lt;U+2587&gt;&lt;U+2583&gt;&lt;U+2583&gt;&lt;U+2581&gt;&lt;U+2581&gt;
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+adjusted.homicide.White
+</td>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:right;">
+0.90
+</td>
+<td style="text-align:right;">
+1.50e+00
+</td>
+<td style="text-align:right;">
+1.17e+00
+</td>
+<td style="text-align:right;">
+2.40e-01
+</td>
+<td style="text-align:right;">
+6.70e-01
+</td>
+<td style="text-align:right;">
+9.90e-01
+</td>
+<td style="text-align:right;">
+1.98e+00
+</td>
+<td style="text-align:right;">
+4.79e+00
+</td>
+<td style="text-align:left;">
+&lt;U+2587&gt;&lt;U+2582&gt;&lt;U+2581&gt;&lt;U+2581&gt;&lt;U+2581&gt;
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Deaths.suicide.Black
+</td>
+<td style="text-align:right;">
+19
+</td>
+<td style="text-align:right;">
+0.82
+</td>
+<td style="text-align:right;">
+3.88e+02
+</td>
+<td style="text-align:right;">
+1.25e+03
+</td>
+<td style="text-align:right;">
+1.10e+01
+</td>
+<td style="text-align:right;">
+5.70e+01
+</td>
+<td style="text-align:right;">
+1.20e+02
+</td>
+<td style="text-align:right;">
+3.23e+02
+</td>
+<td style="text-align:right;">
+8.93e+03
+</td>
+<td style="text-align:left;">
+&lt;U+2587&gt;&lt;U+2581&gt;&lt;U+2581&gt;&lt;U+2581&gt;&lt;U+2581&gt;
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Deaths.suicide.White
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+4.53e+03
+</td>
+<td style="text-align:right;">
+1.63e+04
+</td>
+<td style="text-align:right;">
+2.30e+01
+</td>
+<td style="text-align:right;">
+7.20e+02
+</td>
+<td style="text-align:right;">
+1.73e+03
+</td>
+<td style="text-align:right;">
+3.37e+03
+</td>
+<td style="text-align:right;">
+1.39e+05
+</td>
+<td style="text-align:left;">
+&lt;U+2587&gt;&lt;U+2581&gt;&lt;U+2581&gt;&lt;U+2581&gt;&lt;U+2581&gt;
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+crude.suicide.Black
+</td>
+<td style="text-align:right;">
+26
+</td>
+<td style="text-align:right;">
+0.75
+</td>
+<td style="text-align:right;">
+5.35e+00
+</td>
+<td style="text-align:right;">
+2.00e+00
+</td>
+<td style="text-align:right;">
+1.62e+00
+</td>
+<td style="text-align:right;">
+4.24e+00
+</td>
+<td style="text-align:right;">
+5.24e+00
+</td>
+<td style="text-align:right;">
+6.33e+00
+</td>
+<td style="text-align:right;">
+1.50e+01
+</td>
+<td style="text-align:left;">
+&lt;U+2583&gt;&lt;U+2587&gt;&lt;U+2581&gt;&lt;U+2581&gt;&lt;U+2581&gt;
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+crude.suicide.White
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1.38e+01
+</td>
+<td style="text-align:right;">
+5.52e+00
+</td>
+<td style="text-align:right;">
+2.27e+00
+</td>
+<td style="text-align:right;">
+1.01e+01
+</td>
+<td style="text-align:right;">
+1.22e+01
+</td>
+<td style="text-align:right;">
+1.71e+01
+</td>
+<td style="text-align:right;">
+2.96e+01
+</td>
+<td style="text-align:left;">
+&lt;U+2581&gt;&lt;U+2587&gt;&lt;U+2583&gt;&lt;U+2583&gt;&lt;U+2581&gt;
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+adjusted.suicide.Black
+</td>
+<td style="text-align:right;">
+26
+</td>
+<td style="text-align:right;">
+0.75
+</td>
+<td style="text-align:right;">
+5.43e+00
+</td>
+<td style="text-align:right;">
+1.87e+00
+</td>
+<td style="text-align:right;">
+1.79e+00
+</td>
+<td style="text-align:right;">
+4.33e+00
+</td>
+<td style="text-align:right;">
+5.41e+00
+</td>
+<td style="text-align:right;">
+6.41e+00
+</td>
+<td style="text-align:right;">
+1.28e+01
+</td>
+<td style="text-align:left;">
+&lt;U+2583&gt;&lt;U+2587&gt;&lt;U+2585&gt;&lt;U+2581&gt;&lt;U+2581&gt;
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+adjusted.suicide.White
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.00
+</td>
+<td style="text-align:right;">
+1.32e+01
+</td>
+<td style="text-align:right;">
+5.06e+00
+</td>
+<td style="text-align:right;">
+2.35e+00
+</td>
+<td style="text-align:right;">
+9.72e+00
+</td>
+<td style="text-align:right;">
+1.18e+01
+</td>
+<td style="text-align:right;">
+1.62e+01
+</td>
+<td style="text-align:right;">
+2.86e+01
+</td>
+<td style="text-align:left;">
+&lt;U+2581&gt;&lt;U+2587&gt;&lt;U+2583&gt;&lt;U+2582&gt;&lt;U+2581&gt;
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+crude.RD.suicide
+</td>
+<td style="text-align:right;">
+26
+</td>
+<td style="text-align:right;">
+0.75
+</td>
+<td style="text-align:right;">
+-8.37e+00
+</td>
+<td style="text-align:right;">
+4.30e+00
+</td>
+<td style="text-align:right;">
+-1.93e+01
+</td>
+<td style="text-align:right;">
+-1.09e+01
+</td>
+<td style="text-align:right;">
+-6.85e+00
+</td>
+<td style="text-align:right;">
+-5.45e+00
+</td>
+<td style="text-align:right;">
+1.78e+00
+</td>
+<td style="text-align:left;">
+&lt;U+2582&gt;&lt;U+2583&gt;&lt;U+2585&gt;&lt;U+2587&gt;&lt;U+2581&gt;
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+adj.RD.suicide
+</td>
+<td style="text-align:right;">
+26
+</td>
+<td style="text-align:right;">
+0.75
+</td>
+<td style="text-align:right;">
+-7.55e+00
+</td>
+<td style="text-align:right;">
+3.63e+00
+</td>
+<td style="text-align:right;">
+-1.56e+01
+</td>
+<td style="text-align:right;">
+-9.84e+00
+</td>
+<td style="text-align:right;">
+-6.50e+00
+</td>
+<td style="text-align:right;">
+-5.26e+00
+</td>
+<td style="text-align:right;">
+1.83e+00
+</td>
+<td style="text-align:left;">
+&lt;U+2583&gt;&lt;U+2583&gt;&lt;U+2587&gt;&lt;U+2583&gt;&lt;U+2581&gt;
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+crude.RD.homicide
+</td>
+<td style="text-align:right;">
+28
+</td>
+<td style="text-align:right;">
+0.73
+</td>
+<td style="text-align:right;">
+1.59e+01
+</td>
+<td style="text-align:right;">
+1.51e+01
+</td>
+<td style="text-align:right;">
+1.11e+00
+</td>
+<td style="text-align:right;">
+2.72e+00
+</td>
+<td style="text-align:right;">
+1.25e+01
+</td>
+<td style="text-align:right;">
+2.63e+01
+</td>
+<td style="text-align:right;">
+6.00e+01
+</td>
+<td style="text-align:left;">
+&lt;U+2587&gt;&lt;U+2583&gt;&lt;U+2583&gt;&lt;U+2581&gt;&lt;U+2581&gt;
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+adj.RD.homicide
+</td>
+<td style="text-align:right;">
+28
+</td>
+<td style="text-align:right;">
+0.73
+</td>
+<td style="text-align:right;">
+1.49e+01
+</td>
+<td style="text-align:right;">
+1.42e+01
+</td>
+<td style="text-align:right;">
+1.27e+00
+</td>
+<td style="text-align:right;">
+2.77e+00
+</td>
+<td style="text-align:right;">
+1.11e+01
+</td>
+<td style="text-align:right;">
+2.38e+01
+</td>
+<td style="text-align:right;">
+5.66e+01
+</td>
+<td style="text-align:left;">
+&lt;U+2587&gt;&lt;U+2583&gt;&lt;U+2582&gt;&lt;U+2581&gt;&lt;U+2581&gt;
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+gun.house.prev
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+0.96
+</td>
+<td style="text-align:right;">
+3.90e+01
+</td>
+<td style="text-align:right;">
+1.41e+01
+</td>
+<td style="text-align:right;">
+1.02e+01
+</td>
+<td style="text-align:right;">
+3.23e+01
+</td>
+<td style="text-align:right;">
+4.03e+01
+</td>
+<td style="text-align:right;">
+4.65e+01
+</td>
+<td style="text-align:right;">
+6.55e+01
+</td>
+<td style="text-align:left;">
+&lt;U+2583&gt;&lt;U+2582&gt;&lt;U+2587&gt;&lt;U+2585&gt;&lt;U+2583&gt;
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+average.pop.white
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0.98
+</td>
+<td style="text-align:right;">
+1.94e+06
+</td>
+<td style="text-align:right;">
+1.70e+06
+</td>
+<td style="text-align:right;">
+1.13e+05
+</td>
+<td style="text-align:right;">
+6.33e+05
+</td>
+<td style="text-align:right;">
+1.50e+06
+</td>
+<td style="text-align:right;">
+2.53e+06
+</td>
+<td style="text-align:right;">
+7.70e+06
+</td>
+<td style="text-align:left;">
+&lt;U+2587&gt;&lt;U+2583&gt;&lt;U+2581&gt;&lt;U+2581&gt;&lt;U+2581&gt;
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+average.pop.black
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0.98
+</td>
+<td style="text-align:right;">
+3.78e+05
+</td>
+<td style="text-align:right;">
+4.38e+05
+</td>
+<td style="text-align:right;">
+4.50e+03
+</td>
+<td style="text-align:right;">
+3.41e+04
+</td>
+<td style="text-align:right;">
+1.64e+05
+</td>
+<td style="text-align:right;">
+6.65e+05
+</td>
+<td style="text-align:right;">
+1.51e+06
+</td>
+<td style="text-align:left;">
+&lt;U+2587&gt;&lt;U+2582&gt;&lt;U+2582&gt;&lt;U+2581&gt;&lt;U+2581&gt;
+</td>
+</tr>
+</tbody>
+</table>
+<pre><code>## Rows: 104
+## Columns: 28
+## $ ST                      &lt;chr&gt; &quot;AK&quot;, &quot;AK&quot;, &quot;AL&quot;, &quot;AL&quot;, &quot;AR&quot;, &quot;AR&quot;, &quot;AZ&quot;, &quot;...
+## $ State                   &lt;chr&gt; &quot;Alaska&quot;, &quot;Alaska&quot;, &quot;Alabama&quot;, &quot;Alabama&quot;, &quot;...
+## $ Population.Black        &lt;dbl&gt; 153664, 153664, 5376635, 5376635, 1991165, ...
+## $ Population.White        &lt;dbl&gt; 2274605, 2274605, 14267619, 14267619, 97470...
+## $ Deaths.homicide.Black   &lt;dbl&gt; 23, NA, 183, 1812, 667, 90, 300, 40, 3712, ...
+## $ Deaths.homicide.White   &lt;dbl&gt; 78, 10, 124, 620, 416, 110, 586, 145, 1399,...
+## $ crude.homicide.Black    &lt;dbl&gt; 14.97, NA, 3.40, 33.70, 33.50, 4.52, 22.06,...
+## $ crude.homicide.White    &lt;dbl&gt; 3.43, NA, 0.87, 4.35, 4.27, 1.13, 3.46, 0.8...
+## $ adjusted.homicide.Black &lt;dbl&gt; 12.30, NA, 3.51, 33.00, 33.39, 4.81, 20.40,...
+## $ adjusted.homicide.White &lt;dbl&gt; 3.24, NA, 0.85, 4.47, 4.39, 1.13, 3.63, 0.9...
+## $ Deaths.suicide.Black    &lt;dbl&gt; 23, 12, 148, 370, 118, 75, 101, 80, 492, 63...
+## $ Deaths.suicide.White    &lt;dbl&gt; 535, 196, 1222, 3195, 2154, 1027, 4146, 197...
+## $ crude.suicide.Black     &lt;dbl&gt; 14.97, NA, 2.75, 6.88, 5.93, 3.77, 7.43, 5....
+## $ crude.suicide.White     &lt;dbl&gt; 23.52, 8.62, 8.56, 22.39, 22.10, 10.54, 24....
+## $ adjusted.suicide.Black  &lt;dbl&gt; 12.77, NA, 2.84, 7.20, 6.25, 3.93, 7.51, 5....
+## $ adjusted.suicide.White  &lt;dbl&gt; 23.47, 8.21, 8.64, 20.97, 20.98, 10.89, 21....
+## $ type                    &lt;chr&gt; &quot;Firearm&quot;, &quot;Non-Firearm&quot;, &quot;Non-Firearm&quot;, &quot;F...
+## $ crude.RD.suicide        &lt;dbl&gt; -8.55, NA, -5.81, -15.51, -16.17, -6.77, -1...
+## $ adj.RD.suicide          &lt;dbl&gt; -10.70, NA, -5.80, -13.77, -14.73, -6.96, -...
+## $ crude.RD.homicide       &lt;dbl&gt; 11.54, NA, 2.53, 29.35, 29.23, 3.39, 18.60,...
+## $ adj.RD.homicide         &lt;dbl&gt; 9.06, NA, 2.66, 28.53, 29.00, 3.68, 16.77, ...
+## $ ST.order.RD.homicide    &lt;chr&gt; &quot;AK&quot;, &quot;AK&quot;, &quot;AL&quot;, &quot;AL&quot;, &quot;AR&quot;, &quot;AR&quot;, &quot;AZ&quot;, &quot;...
+## $ ST.order.RD.suicide     &lt;chr&gt; &quot;AK&quot;, &quot;AK&quot;, &quot;AL&quot;, &quot;AL&quot;, &quot;AR&quot;, &quot;AR&quot;, &quot;AZ&quot;, &quot;...
+## $ gun.house.prev          &lt;dbl&gt; 59.8, 59.8, 52.2, 52.2, 58.8, 58.8, 32.3, 3...
+## $ gun.house.prev.category &lt;chr&gt; &quot;45.0%-65.5%&quot;, &quot;45.0%-65.5%&quot;, &quot;45.0%-65.5%&quot;...
+## $ average.pop.white       &lt;dbl&gt; 252734, 252734, 1585291, 1585291, 1083003, ...
+## $ average.pop.black       &lt;dbl&gt; 17074, 17074, 597404, 597404, 221241, 22124...
+## $ type.fac                &lt;chr&gt; &quot;Firearm-related&quot;, &quot;Firearm-unrelated&quot;, &quot;Fi...</code></pre>
+<pre class="r"><code>CDC_Males_cleaned &lt;- CDC_Males %&gt;% 
+  filter(type == &quot;Firearm&quot;) %&gt;% 
+  mutate(white_suicide_rate = Deaths.suicide.White / average.pop.white * 10^5 / 9,
+    white_homicide_rate = Deaths.homicide.White / average.pop.white * 10^5 / 9, 
+    gun_ownership_raw = gun.house.prev,
+    white_population = average.pop.white,
+    gun_ownership = ifelse(gun_ownership_raw&gt;10.2 &amp; gun_ownership_raw&lt;19.99, &quot;10.20% to 19.99%&quot;,             ifelse(gun_ownership_raw&gt;20.0 &amp; gun_ownership_raw &lt;34.99, &quot;20.00% to 34.99%&quot;,
+                             ifelse(gun_ownership_raw&gt;=35.0 &amp; gun_ownership_raw&lt;44.99,
+                                    &quot;35.00% to 44.99%&quot;,&quot;45.0% to 65.59%&quot;))))
+
+ggplot(CDC_Males_cleaned, 
+       aes(x = white_suicide_rate, 
+                            y = white_homicide_rate, 
+                            label = ST,
+                            fill = gun_ownership,
+                            size = white_population),
+       scale_fill_manual = gun_ownership) +
+  geom_point(alpha=0.5, shape=21, color=&quot;black&quot;)+
+  geom_text_repel(size = 3, color = &quot;black&quot;)+
+  labs(x = &quot;White Suicide Rate (per 100000 per Year)&quot;,
+       y = &quot;White Homicide Rate (per 100 000 per Year)&quot;)+
+  scale_x_continuous(breaks = c(0, 10, 20, 30),
+                     limits = c(0, 30))+
+  scale_y_continuous(breaks = c(0, 1, 2, 3, 4, 5),
+                     limits = c(0, 5))+
+  theme(axis.line.x.bottom = element_line(color = &quot;black&quot;),
+        axis.line.y.left = element_line(color = &quot;black&quot;),
+        axis.ticks.x = element_line(color = &quot;black&quot;),
+        axis.ticks.y = element_line(color = &quot;black&quot;),
+        )</code></pre>
+<p><img src="/blogs/stock_files/figure-html/challenge1b-1.png" width="648" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="challenge-2" class="section level1">
+<h1>Challenge 2</h1>
+<div id="challenge-2-2016-california-contributors-plots" class="section level2">
+<h2>Challenge 2: 2016 California Contributors plots</h2>
+<p>As discussed in class, I would like you to reproduce the plot that shows the top ten cities in highest amounts raised in political contributions in California during the 2016 US Presidential election.</p>
+<p><img src="C:/Users/chulh/OneDrive/Documents/myzebsite7/images/challenge2.png" width="100%" style="display: block; margin: auto;" /></p>
+<p>To get this plot, you must join two dataframes; the one you have with all contributions, and data that can translate zipcodes to cities.
+You can find a file with all US zipcodes, e.g., here <a href="http://www.uszipcodelist.com/download.html" class="uri">http://www.uszipcodelist.com/download.html</a>.</p>
+<p>The easiest way would be to create two plots and then place one next to each other. For this, you will need the <code>patchwork</code> package.
+<a href="https://cran.r-project.org/web/packages/patchwork/index.html" class="uri">https://cran.r-project.org/web/packages/patchwork/index.html</a></p>
+<p>While this is ok, what if one asked you to create the same plot for the top 10 candidates and not just the top two? The most challenging part is how to reorder within categories, and for this you will find Julia Silge’s post on <a href="https://juliasilge.com/blog/reorder-within/">REORDERING AND FACETTING FOR GGPLOT2</a> useful.</p>
+<pre class="r"><code># Make sure you use vroom() as it is significantly faster than read.csv()
+CA_contributors_2016 &lt;- vroom::vroom(here::here(&quot;data&quot;,&quot;CA_contributors_2016.csv&quot;))
+
+zip_code &lt;- read_csv(here::here(&quot;data&quot;,&quot;zip_code_database.csv&quot;))
+glimpse(zip_code)</code></pre>
+<pre><code>## Rows: 42,522
+## Columns: 16
+## $ zip                  &lt;chr&gt; &quot;00501&quot;, &quot;00544&quot;, &quot;00601&quot;, &quot;00602&quot;, &quot;00603&quot;, &quot;...
+## $ type                 &lt;chr&gt; &quot;UNIQUE&quot;, &quot;UNIQUE&quot;, &quot;STANDARD&quot;, &quot;STANDARD&quot;, &quot;S...
+## $ primary_city         &lt;chr&gt; &quot;Holtsville&quot;, &quot;Holtsville&quot;, &quot;Adjuntas&quot;, &quot;Aguad...
+## $ acceptable_cities    &lt;chr&gt; NA, NA, NA, NA, &quot;Ramey&quot;, &quot;Ramey&quot;, NA, NA, NA, ...
+## $ unacceptable_cities  &lt;chr&gt; &quot;I R S Service Center&quot;, &quot;Irs Service Center&quot;, ...
+## $ state                &lt;chr&gt; &quot;NY&quot;, &quot;NY&quot;, &quot;PR&quot;, &quot;PR&quot;, &quot;PR&quot;, &quot;PR&quot;, &quot;PR&quot;, &quot;PR&quot;...
+## $ county               &lt;chr&gt; &quot;Suffolk County&quot;, &quot;Suffolk County&quot;, &quot;Adjuntas&quot;...
+## $ timezone             &lt;chr&gt; &quot;America/New_York&quot;, &quot;America/New_York&quot;, &quot;Ameri...
+## $ area_codes           &lt;dbl&gt; 631, 631, 787939, 787, 787, NA, NA, 787939, 78...
+## $ latitude             &lt;dbl&gt; 40.8, 40.8, 18.2, 18.4, 18.4, 18.4, 18.4, 18.2...
+## $ longitude            &lt;dbl&gt; -73.0, -73.0, -66.7, -67.2, -67.2, -67.2, -67....
+## $ world_region         &lt;lgl&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA...
+## $ country              &lt;chr&gt; &quot;US&quot;, &quot;US&quot;, &quot;US&quot;, &quot;US&quot;, &quot;US&quot;, &quot;US&quot;, &quot;US&quot;, &quot;US&quot;...
+## $ decommissioned       &lt;dbl&gt; 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0...
+## $ estimated_population &lt;dbl&gt; 384, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,...
+## $ notes                &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, &quot;no NWS da...</code></pre>
+<pre class="r"><code>zip_code_cleaned &lt;- zip_code %&gt;%
+  filter(state == &#39;CA&#39;) %&gt;% # California only
+  select(zip, primary_city)  
+
+CA_contributors_2016_cleaned &lt;- CA_contributors_2016 %&gt;%
+  filter(cand_nm %in% c(&#39;Clinton, Hillary Rodham&#39;, # Clinton and Trump only
+                        &#39;Trump, Donald J.&#39;)) %&gt;%
+  select(cand_nm, contb_receipt_amt, zip) 
+
+zip_code_cleaned$zip &lt;- as.numeric(zip_code_cleaned$zip) 
+
+joint_data &lt;- left_join(CA_contributors_2016_cleaned,
+                     zip_code_cleaned,
+                     by = &#39;zip&#39;) 
+
+
+my_data &lt;- joint_data %&gt;%
+  group_by(cand_nm) %&gt;%
+  count(primary_city, wt = contb_receipt_amt, sort = TRUE)
+
+library(tidytext)
+library(scales)
+my_data %&gt;%
+  group_by(cand_nm) %&gt;%
+  top_n(10) %&gt;%
+  ungroup %&gt;%
+  mutate(cand_nm = factor(cand_nm),
+    primary_city = reorder_within(primary_city, n, cand_nm)) %&gt;%
+  ggplot(aes(x = primary_city, y = n, fill = cand_nm)) +
+  geom_col(show.legend = FALSE) +
+  
+  scale_fill_manual(values = c(&#39;Clinton, Hillary Rodham&#39; = &#39;#0015BC&#39;,&#39;Trump, Donald J.&#39; = &#39;#E91D0E&#39;)) +
+  facet_wrap(~cand_nm, scales = &#39;free&#39;) +
+  scale_x_reordered() +
+  scale_y_continuous(labels = label_dollar()) +
+  theme_bw() +
+  labs(y = &#39;Raised Amount&#39;,
+       x = &#39;&#39;,
+       title = &#39;Where did the candidates raise most of their money?&#39;) +
+  coord_flip() </code></pre>
+<p><img src="/blogs/stock_files/figure-html/load_CA_data-1.png" width="648" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>CA_contributors_top10 &lt;- CA_contributors_2016 %&gt;%
+  group_by(cand_nm) %&gt;%
+  summarise(total_amount = sum(contb_receipt_amt)) %&gt;%
+  arrange(desc(total_amount)) %&gt;%
+  head(10) 
+top10_contributor &lt;- CA_contributors_top10$cand_nm
+
+CA_contributors_top10_cleaned &lt;- CA_contributors_2016 %&gt;%
+  filter(cand_nm %in% top10_contributor) %&gt;%
+  select(cand_nm, contb_receipt_amt, zip)
+
+joint_data_top10 &lt;- left_join(CA_contributors_top10_cleaned,
+                     zip_code_cleaned,
+                     by = &#39;zip&#39;) 
+
+
+my_data &lt;- joint_data_top10 %&gt;%
+  group_by(cand_nm) %&gt;%
+  count(primary_city, wt = contb_receipt_amt, sort = TRUE)
+
+candm_shade &lt;- c(&quot;Bush, Jeb&quot;  = &quot;#E91D0E&quot;,
+                 &quot;Carson, Benjamin S.&quot; =&quot;#E91D0E&quot;,
+                 &quot;Clinton, Hillary Rodham&quot; = &quot;#0015BC&quot;,
+                 &quot;Cruz, Rafael Edward &#39;Ted&#39;&quot; =&quot;#E91D0E&quot;,
+                 &quot;Fiorina, Carly&quot; =&quot;#E91D0E&quot;,
+                 &quot;Kasich, John R.&quot; =&quot;#E91D0E&quot;,
+                 &quot;Paul, Rand&quot; =&quot;#E91D0E&quot;,
+                 &quot;Rubio, Marco&quot; =&quot;#E91D0E&quot;,
+                 &quot;Sanders, Bernard&quot; = &quot;#0015BC&quot;,
+                 &quot;Trump, Donald J.&quot; = &quot;#E91D0E&quot;)
+
+library(tidytext)
+library(scales)
+my_data %&gt;%
+  group_by(cand_nm) %&gt;%
+  top_n(10) %&gt;%
+  ungroup %&gt;%
+  mutate(cand_nm = factor(cand_nm),
+    primary_city = reorder_within(primary_city, n, cand_nm)) %&gt;%
+  ggplot(aes(x = primary_city, y = n, fill = cand_nm)) +
+  geom_col(show.legend = FALSE) +
+  scale_fill_manual(values = candm_shade) +
+  facet_wrap(~cand_nm, scales = &#39;free&#39;,nrow = 5, ncol = 2) +
+  scale_x_reordered() +
+  scale_y_continuous(labels = label_dollar()) +
+  theme_bw() +
+  labs(y = &#39;Raised Amount&#39;,
+       x = &#39;&#39;,
+       title = &#39;Where did the Top 10 candidates raise the most money?&#39;) +
+  coord_flip() </code></pre>
+<p><img src="/blogs/stock_files/figure-html/challenge_2_matched-1.png" width="648" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="deliverables" class="section level1">
+<h1>Deliverables</h1>
+<p>There is a lot of explanatory text, comments, etc. You do not need these, so delete them and produce a stand-alone document that you could share with someone. Knit the edited and completed R Markdown file as an HTML document (use the “Knit” button at the top of the script editor window) and upload it to Canvas.</p>
+</div>
+<div id="details" class="section level1">
+<h1>Details</h1>
+<ul>
+<li><p>Who did you collaborate with: Study Group 36B: Doris Jiang, Marc Brothier, Max Clark, Konstantin Pinkl, Simon Yang, Viktor Nave</p></li>
+<li><p>Approximately how much time did you spend on this problem set: 30 hours</p></li>
+<li><p>What, if anything, gave you the most trouble: Definitely the challenges, specifically challenge 2</p></li>
+</ul>
+<p><strong>Please seek out help when you need it,</strong> and remember the <a href="https://mam2021.netlify.app/syllabus/#the-15-minute-rule" target="_blank">15-minute rule</a>. You know enough R (and have enough examples of code from class and your readings) to be able to do this. If you get stuck, ask for help from others, post a question on Slack– and remember that I am here to help too!</p>
+</div>
+<div id="rubric" class="section level1">
+<h1>Rubric</h1>
+<p>Check minus (1/5): Displays minimal effort. Doesn’t complete all components. Code is poorly written and not documented. Uses the same type of plot for each graph, or doesn’t use plots appropriate for the variables being analyzed.</p>
+<p>Check (3/5): Solid effort. Hits all the elements. No clear mistakes. Easy to follow (both the code and the output).</p>
+<p>Check plus (5/5): Finished all components of the assignment correctly and addressed both challenges. Code is well-documented (both self-documented and with additional comments as necessary). Used tidyverse, instead of base R. Graphs and</p>
+</div>

@@ -73,11 +73,31 @@
   </url>
   
   <url>
+    <loc>/blogs/newibm/</loc>
+  </url>
+  
+  <url>
     <loc>/blogs/blog5/</loc>
   </url>
   
   <url>
     <loc>/blogs/homework1_wine/</loc>
+  </url>
+  
+  <url>
+    <loc>/blogs/weather/</loc>
+  </url>
+  
+  <url>
+    <loc>/blogs/movies/</loc>
+  </url>
+  
+  <url>
+    <loc>/blogs/stock/</loc>
+  </url>
+  
+  <url>
+    <loc>/blogs/new_drinks/</loc>
   </url>
   
 </urlset>
