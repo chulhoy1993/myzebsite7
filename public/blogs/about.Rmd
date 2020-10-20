@@ -1,0 +1,30 @@
+---
+title: "About me"
+output: html_document
+---
+---
+categories:
+- ""
+- ""
+date: "2017-10-31T21:28:43-05:00"
+description: ""
+draft: false
+image: pic10.jpg
+keywords: ""
+slug: about
+title: Ipsum2
+---
+
+> Welcome to my site!!! 
+
+# Brief Intro: **Simon Yang**
+
+## _Annyeonghaseyo!_ My name is Simon Yang and I'm from [South Korea](https://en.wikipedia.org/wiki/South_Korea). I really enjoying traveling and scuba diving and espcially enjoy scuba diving while traveling! Apart from Korea, I have lived in the following places: 
+
+- United Arab Emirates 
+- Jordan 
+- Singapore 
+- Hong Kong 
+
+## As someone looking into investment banking, I would like to work in Canary Wharf in one of the many financial institutions located there. I truly feel that London is a city like no other. It is vibrant, diverse and most importantly home to all residents regardless of race, religion and education background. I am really looking forward to spending my time in London!   
+![](https://i.guim.co.uk/img/media/78800cd54ff5bb6db94d95ba0ee8ee79576afde6/0_115_6016_3611/master/6016.jpg?width=1200&height=1200&quality=85&auto=format&fit=crop&s=24ed2dfeed3237c628bbbd9e8db3530b)

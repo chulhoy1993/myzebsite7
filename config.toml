@@ -95,7 +95,7 @@ disqusShortname = ""
       title = "Simon"
       subtitle = "Welcome to the site"
       image = "canarywharf.jpg"
-      url = "blogs/CV"
+      url = "blogs/about"
 
     [[params.tiles.showcase]]
       title = "Analysis on Top 25 Countries that consume alcohol"
@@ -113,7 +113,7 @@ disqusShortname = ""
       title = "Selected equity returns on NYSE"
       subtitle = "Stock Returns"
       image = "nyse.jpg"
-      url = "blogs/blog5"
+      url = "blogs/stock"
 
     [[params.tiles.showcase]]
       title = "IMD Movie Ratings"

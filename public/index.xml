@@ -55,6 +55,16 @@ summary(cars)## speed dist ## Min. : 4.0 Min. : 2.00 ## 1st Qu.:12.0 1st Qu.: 2
     </item>
     
     <item>
+      <title>About me</title>
+      <link>/blogs/about/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/blogs/about/</guid>
+      <description>Welcome to my site!!!
+Brief Intro: Simon YangAnnyeonghaseyo! My name is Simon Yang and I’m from South Korea. I really enjoying traveling and scuba diving and espcially enjoy scuba diving while traveling! Apart from Korea, I have lived in the following places:United Arab EmiratesJordanSingaporeHong KongAs someone looking into investment banking, I would like to work in Canary Wharf in one of the many financial institutions located there.</description>
+    </item>
+    
+    <item>
       <title>Analysis on IBM&#39;s HR Practice</title>
       <link>/blogs/newibm/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
